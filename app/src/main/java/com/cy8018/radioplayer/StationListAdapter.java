@@ -17,18 +17,16 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import java.util.List;
 
-//import de.hdodenhof.circleimageview.CircleImageView;
-
 public class StationListAdapter extends RecyclerView.Adapter<StationListAdapter.ViewHolder>{
 
     private static final String TAG = "StationListAdapter";
 
     private int selectedPos = RecyclerView.NO_POSITION;
 
-    List<Station> mStationList;
+    private List<Station> mStationList;
     private Context mContext;
 
-    public StationListAdapter(Context context, List<Station> stationList) {
+    StationListAdapter(Context context, List<Station> stationList) {
         this.mContext = context;
         this.mStationList = stationList;
     }
@@ -37,8 +35,7 @@ public class StationListAdapter extends RecyclerView.Adapter<StationListAdapter.
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_layout, parent, false);
-        ViewHolder holder = new ViewHolder(view);
-        return holder;
+        return new ViewHolder(view);
     }
 
     @Override
@@ -91,10 +88,9 @@ public class StationListAdapter extends RecyclerView.Adapter<StationListAdapter.
 
                 // Send MSG_PLAY message to main thread to play the radio
                 Message msg = new Message();
-                msg.obj = mStationList.get(position).url;
+                msg.obj = position;
                 msg.what = ((MainActivity)mContext).MSG_PLAY;
                 ((MainActivity)mContext).mHandler.sendMessage(msg);
-
             }
         });
 
@@ -110,7 +106,7 @@ public class StationListAdapter extends RecyclerView.Adapter<StationListAdapter.
         return mStationList.size();
     }
 
-    public String getFlagResourceByCountry(String country) {
+    private String getFlagResourceByCountry(String country) {
         String resource = null;
         switch(country)
         {
@@ -136,33 +132,7 @@ public class StationListAdapter extends RecyclerView.Adapter<StationListAdapter.
         return resource;
     }
 
-//    public String getFlagUrlByCountry(String country) {
-//        String url = null;
-//        switch(country)
-//        {
-//            case "AU":
-//                url = "http://52.183.27.112/radio/flag/flag_au.png";
-//                break;
-//            case "CA":
-//                url = "http://52.183.27.112/radio/flag/flag_ca.png";
-//                break;
-//            case "CN":
-//                url = "http://52.183.27.112/radio/flag/flag_cn.png";
-//                break;
-//            case "UK":
-//                url = "http://52.183.27.112/radio/flag/flag_uk.png";
-//                break;
-//            case "US":
-//                url = "http://52.183.27.112/radio/flag/flag_us.png";
-//                break;
-//            case "NZ":
-//                url = "http://52.183.27.112/radio/flag/flag_nz.png";
-//                break;
-//        }
-//        return url;
-//    }
-
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder {
 
         ImageView stationLogo;
         ImageView flag;
@@ -170,7 +140,7 @@ public class StationListAdapter extends RecyclerView.Adapter<StationListAdapter.
         TextView description;
         RelativeLayout parentLayout;
 
-        public ViewHolder (View itemView)
+        private ViewHolder (View itemView)
         {
             super(itemView);
             flag = itemView.findViewById(R.id.flag);

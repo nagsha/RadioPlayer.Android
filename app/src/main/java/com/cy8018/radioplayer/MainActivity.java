@@ -5,15 +5,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.bumptech.glide.Glide;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.MediaSource;
@@ -26,6 +28,7 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 import okhttp3.OkHttpClient;
@@ -36,61 +39,84 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
-    public static final String StationListUrl = "http://52.183.27.112/radio/station_list.json";
+    // Station list JSON file url
+    public static final String StationListUrl = "http://13.78.120.63/radio/station_list.json";
 
+    public final MsgHandler mHandler = new MsgHandler(this);
+
+    // message to load the station list
     public static final int MSG_LOAD_LIST = 0;
 
+    // message to play the radio
     public static final int MSG_PLAY = 1;
 
-
+    // station list
     protected List<Station> mStationList;
 
+    // Exo Player instance
     protected SimpleExoPlayer player;
+
+    // DataSource factory instance
     protected DataSource.Factory dataSourceFactory;
 
-    private String CurrentStationUrl;
+    private Station mCurrentStation;
 
-    public String getCurrentStationUrl() {
-        return CurrentStationUrl;
-    }
+    protected TextView textCurrentStationName;
 
-    public void setCurrentStationUrl(String currentStationUrl) {
-        CurrentStationUrl = currentStationUrl;
-    }
+    protected ImageView imageCurrentStationLogo;
 
+    protected ImageView imagePlayBtn;
 
-    public static Handler mHandler;
-    {
-        mHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
+    public static class MsgHandler extends Handler {
+        WeakReference<MainActivity> mMainActivityWeakReference;
 
+        MsgHandler(MainActivity mainActivity) {
+            mMainActivityWeakReference = new WeakReference<>(mainActivity);
+        }
 
-                Log.d(TAG, "Handler: msg.what = " + msg.what);
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
 
-                if (msg.what == MSG_LOAD_LIST) {
-                    initStationListView();
-                }
-                else if (msg.what == MSG_PLAY) {
-                    String url = (String) msg.obj;
-                    play(url);
-                }
+            Log.d(TAG, "Handler: msg.what = " + msg.what);
+
+            MainActivity mainActivity = mMainActivityWeakReference.get();
+
+            if (msg.what == MSG_LOAD_LIST) {
+                mainActivity.initStationListView();
             }
-        };
+            else if (msg.what == MSG_PLAY) {
+                int selectedPosition = (int) msg.obj;
+                mainActivity.mCurrentStation = mainActivity.mStationList.get(selectedPosition);
+                mainActivity.setCurrentPlayInfo(mainActivity.mCurrentStation);
+                mainActivity.play(mainActivity.mCurrentStation.url);
+            }
+        }
     }
 
-//    public void OnPlay(String url)
-//    {
-//        setCurrentStationUrl(url);
-//        new Thread(playerRunnable).start();
-//    }
+    protected void setCurrentPlayInfo(Station station)
+    {
+        // Load the station logo.
+        Glide.with(this)
+                .asBitmap()
+                .load(station.logo)
+                .into(imageCurrentStationLogo);
+
+        textCurrentStationName.setText(station.name);
+
+        int iResource = getResources().getIdentifier("@drawable/refresh", null, getPackageName());
+        imagePlayBtn.setImageResource(iResource);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.d(TAG, "onCreate: ");
+
+        imagePlayBtn = findViewById(R.id.imagePlayBtn);
+        imageCurrentStationLogo = findViewById(R.id.imageCurrentStationLogo);
+        textCurrentStationName = findViewById(R.id.textCurrentStationName);
 
         initializePlayer();
 
@@ -114,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // This is the MediaSource representing the media to be played.
-        MediaSource mediaSource = null;
+        MediaSource mediaSource;
 
         // Makes a best guess to infer the type from a Uri.
         int mediaType = Util.inferContentType(uri);
@@ -149,17 +175,6 @@ public class MainActivity extends AppCompatActivity {
         stationListView.setAdapter(adapter);
         stationListView.setLayoutManager(new LinearLayoutManager(this));
     }
-
-    Runnable playerRunnable = new Runnable() {
-        @Override
-        public void run() {
-            String url = getCurrentStationUrl();
-            if (null != url && url.length() > 0)
-            {
-                play(url);
-            }
-        }
-    };
 
     Runnable loadListRunnable = new Runnable(){
         @Override
@@ -199,6 +214,4 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
     };
-
-
 }
