@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -17,6 +18,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.bumptech.glide.Glide;
 import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
@@ -27,6 +29,9 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -35,7 +40,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements Player.EventListener {
 
     private static final String TAG = "MainActivity";
 
@@ -53,19 +58,31 @@ public class MainActivity extends AppCompatActivity {
     // station list
     protected List<Station> mStationList;
 
+    private Station mCurrentStation;
+
     // Exo Player instance
     protected SimpleExoPlayer player;
 
     // DataSource factory instance
     protected DataSource.Factory dataSourceFactory;
 
-    private Station mCurrentStation;
-
     protected TextView textCurrentStationName;
 
     protected ImageView imageCurrentStationLogo;
 
     protected ImageView imagePlayBtn;
+
+    protected ImageView imageCurrentFlag;
+
+    protected int mPlaybackStatus;
+
+    static class PlaybackStatus {
+        static final int IDLE = 0;
+        static final int LOADING = 1;
+        static final int PLAYING = 2;
+        static final int PAUSED = 3;
+        static final int STOPPED = 4;
+    }
 
     public static class MsgHandler extends Handler {
         WeakReference<MainActivity> mMainActivityWeakReference;
@@ -94,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    protected void setCurrentPlayInfo(Station station)
+    protected void setCurrentPlayInfo(@NotNull Station station)
     {
         // Load the station logo.
         Glide.with(this)
@@ -102,10 +119,16 @@ public class MainActivity extends AppCompatActivity {
                 .load(station.logo)
                 .into(imageCurrentStationLogo);
 
-        textCurrentStationName.setText(station.name);
+        String title = station.name + ", " + station.city;
+        if (station.province != null && station.province.length() > 0) {
+            title = title + ", " + station.province;
+        }
+        textCurrentStationName.setText(title);
 
         int iResource = getResources().getIdentifier("@drawable/refresh", null, getPackageName());
         imagePlayBtn.setImageResource(iResource);
+
+        imageCurrentFlag.setImageResource(getResources().getIdentifier(getFlagResourceByCountry(station.country), null, getPackageName()));
     }
 
     @Override
@@ -115,12 +138,34 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate: ");
 
         imagePlayBtn = findViewById(R.id.imagePlayBtn);
+        imageCurrentFlag = findViewById(R.id.imageCurrentFlag);
         imageCurrentStationLogo = findViewById(R.id.imageCurrentStationLogo);
         textCurrentStationName = findViewById(R.id.textCurrentStationName);
+
+        imagePlayBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (mPlaybackStatus) {
+                    case PlaybackStatus.PAUSED:
+                        play(mCurrentStation.url);
+                        break;
+                    case PlaybackStatus.PLAYING:
+                        player.stop(false);
+                        break;
+                    default:
+                }
+            }
+        });
 
         initializePlayer();
 
         new Thread(loadListRunnable).start();
+    }
+
+    @Override
+    protected void onDestroy() {
+        releasePlayer();
+        super.onDestroy();
     }
 
     protected void initializePlayer (){
@@ -128,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
             player = new SimpleExoPlayer.Builder(this).build();
         }
 
+        player.addListener(this);
         // Produces DataSource instances through which media data is loaded.
         dataSourceFactory = new DefaultDataSourceFactory(this, Util.getUserAgent(this, "RadioPlayer"));
     }
@@ -168,12 +214,79 @@ public class MainActivity extends AppCompatActivity {
         player.setPlayWhenReady(true);
     }
 
+    @Override
+    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+
+        Log.d(TAG, "onPlayerStateChanged: playWhenReady:"+ playWhenReady + " playbackState:" + playbackState);
+        switch (playbackState) {
+            case Player.STATE_BUFFERING:
+                mPlaybackStatus = PlaybackStatus.LOADING;
+                imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/refresh", null, getPackageName()));
+                break;
+            case Player.STATE_ENDED:
+                mPlaybackStatus = PlaybackStatus.STOPPED;
+                imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/play", null, getPackageName()));
+                break;
+            case Player.STATE_IDLE:
+                mPlaybackStatus = PlaybackStatus.IDLE;
+                imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/play", null, getPackageName()));
+                break;
+            case Player.STATE_READY:
+                mPlaybackStatus = playWhenReady ? PlaybackStatus.PLAYING : PlaybackStatus.PAUSED;
+                if (mPlaybackStatus ==PlaybackStatus.PLAYING) {
+                    imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/pause", null, getPackageName()));
+                }
+                else {
+                    imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/play", null, getPackageName()));
+                }
+                break;
+            default:
+                mPlaybackStatus = PlaybackStatus.IDLE;
+                imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/play", null, getPackageName()));
+                break;
+        }
+    }
+
+    private void releasePlayer() {
+        if (player != null) {
+            player.stop();
+            player.release();
+            player = null;
+        }
+    }
+
     private void initStationListView() {
         Log.d(TAG, "initStationListView: ");
         RecyclerView stationListView = findViewById(R.id.stationList);
         StationListAdapter adapter= new StationListAdapter(this, mStationList);
         stationListView.setAdapter(adapter);
         stationListView.setLayoutManager(new LinearLayoutManager(this));
+    }
+
+    public String getFlagResourceByCountry(String country) {
+        String resource = null;
+        switch(country)
+        {
+            case "AU":
+                resource = "@drawable/flag_au";
+                break;
+            case "CA":
+                resource = "@drawable/flag_ca";
+                break;
+            case "CN":
+                resource = "@drawable/flag_cn";
+                break;
+            case "UK":
+                resource = "@drawable/flag_uk";
+                break;
+            case "US":
+                resource = "@drawable/flag_us";
+                break;
+            case "NZ":
+                resource = "@drawable/flag_nz";
+                break;
+        }
+        return resource;
     }
 
     Runnable loadListRunnable = new Runnable(){
@@ -192,6 +305,7 @@ public class MainActivity extends AppCompatActivity {
             mHandler.sendEmptyMessage(MSG_LOAD_LIST);
         }
 
+        @Nullable
         private String getJsonString(String url) {
             try {
                 OkHttpClient client = new OkHttpClient();

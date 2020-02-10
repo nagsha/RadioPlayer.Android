@@ -54,7 +54,7 @@ public class StationListAdapter extends RecyclerView.Adapter<StationListAdapter.
 //                .load(getFlagUrlByCountry(mStationList.get(position).country))
 //                .into(holder.flag);
 
-        String flagResource = getFlagResourceByCountry(mStationList.get(position).country);
+        String flagResource = ((MainActivity)mContext).getFlagResourceByCountry(mStationList.get(position).country);
         int iFlagResource = mContext.getResources().getIdentifier(flagResource, null, mContext.getPackageName());
         Log.d(TAG, "onBindViewHolder: flagResource:" + flagResource + " iFlagResource:" + iFlagResource);
         holder.flag.setImageResource(iFlagResource);
@@ -104,32 +104,6 @@ public class StationListAdapter extends RecyclerView.Adapter<StationListAdapter.
             return 0;
         }
         return mStationList.size();
-    }
-
-    private String getFlagResourceByCountry(String country) {
-        String resource = null;
-        switch(country)
-        {
-            case "AU":
-                resource = "@drawable/flag_au";
-                break;
-            case "CA":
-                resource = "@drawable/flag_ca";
-                break;
-            case "CN":
-                resource = "@drawable/flag_cn";
-                break;
-            case "UK":
-                resource = "@drawable/flag_uk";
-                break;
-            case "US":
-                resource = "@drawable/flag_us";
-                break;
-            case "NZ":
-                resource = "@drawable/flag_nz";
-                break;
-        }
-        return resource;
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {

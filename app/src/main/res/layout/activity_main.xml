@@ -19,31 +19,53 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="55dp"
+        android:layout_height="60dp"
         android:orientation="horizontal"
-        android:layout_below="@+id/stationList"
-        android:background="@color/colorGrey">
+        android:background="@color/colorLightGrey">
 
         <ImageView
             android:id="@+id/imagePlayBtn"
             android:layout_gravity="center_vertical"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:padding="5dp"/>
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="5dp"
+            />
         <ImageView
             android:id="@+id/imageCurrentStationLogo"
             android:layout_gravity="center_vertical"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:padding="5dp"/>
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            />
         <TextView
             android:id="@+id/textCurrentStationName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_gravity="center_vertical"
-            android:textSize="22sp"
-
+            android:gravity="center"
+            android:textStyle="bold|italic"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:textSize="20sp"
+            />
+        <ImageView
+            android:id="@+id/imageCurrentFlag"
+            android:layout_gravity="center_vertical"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="10dp"
             />
     </LinearLayout>
 
