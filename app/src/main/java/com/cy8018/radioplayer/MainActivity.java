@@ -227,10 +227,10 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
                 mPlaybackStatus = PlaybackStatus.STOPPED;
                 imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/play", null, getPackageName()));
                 break;
-            case Player.STATE_IDLE:
-                mPlaybackStatus = PlaybackStatus.IDLE;
-                imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/play", null, getPackageName()));
-                break;
+//            case Player.STATE_IDLE:
+//                mPlaybackStatus = PlaybackStatus.IDLE;
+//                imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/play", null, getPackageName()));
+//                break;
             case Player.STATE_READY:
                 mPlaybackStatus = playWhenReady ? PlaybackStatus.PLAYING : PlaybackStatus.PAUSED;
                 if (mPlaybackStatus ==PlaybackStatus.PLAYING) {
@@ -263,7 +263,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         stationListView.setLayoutManager(new LinearLayoutManager(this));
     }
 
-    public String getFlagResourceByCountry(String country) {
+    public String getFlagResourceByCountry(@NotNull String country) {
         String resource = null;
         switch(country)
         {
@@ -309,20 +309,13 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         private String getJsonString(String url) {
             try {
                 OkHttpClient client = new OkHttpClient();
-                Request request = new Request.Builder()
-                        .url(url)
-                        .build();
-                Response responses = null;
-
-                try {
-                    responses = client.newCall(request).execute();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                Request request = new Request.Builder().url(url).build();
+                Response responses = client.newCall(request).execute();
                 String jsonData = responses.body().string();
-                Log.d(TAG, "getJsonString: jsonData:[" + jsonData + "]");
+                Log.d(TAG, "getJsonString: [" + jsonData + "]");
+
                 return jsonData;
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return null;

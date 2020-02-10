@@ -48,15 +48,9 @@ public class StationListAdapter extends RecyclerView.Adapter<StationListAdapter.
                 .load(mStationList.get(position).logo)
                 .into(holder.stationLogo);
 
-        // Load the country flag.
-//        Glide.with(mContext)
-//                .asBitmap()
-//                .load(getFlagUrlByCountry(mStationList.get(position).country))
-//                .into(holder.flag);
-
         String flagResource = ((MainActivity)mContext).getFlagResourceByCountry(mStationList.get(position).country);
         int iFlagResource = mContext.getResources().getIdentifier(flagResource, null, mContext.getPackageName());
-        Log.d(TAG, "onBindViewHolder: flagResource:" + flagResource + " iFlagResource:" + iFlagResource);
+
         holder.flag.setImageResource(iFlagResource);
 
         String title = mStationList.get(position).name + ", " + mStationList.get(position).city;
@@ -67,6 +61,7 @@ public class StationListAdapter extends RecyclerView.Adapter<StationListAdapter.
         // Set the station title
         holder.stationTitle.setText(title);
 
+        Log.d(TAG, "onBindViewHolder: station loaded:" + title);
         // Set the station description
         holder.description.setText(mStationList.get(position).description);
 
