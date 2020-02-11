@@ -39,6 +39,7 @@ import java.util.List;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import pl.droidsonroids.gif.GifImageView;
 
 public class MainActivity extends AppCompatActivity implements Player.EventListener {
 
@@ -70,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
 
     protected ImageView imageCurrentStationLogo;
 
-    protected ImageView imagePlayBtn;
+    protected GifImageView imagePlayBtn;
 
     protected ImageView imageCurrentFlag;
 
@@ -221,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         switch (playbackState) {
             case Player.STATE_BUFFERING:
                 mPlaybackStatus = PlaybackStatus.LOADING;
-                imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/refresh", null, getPackageName()));
+                imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/loading", null, getPackageName()));
                 break;
             case Player.STATE_ENDED:
                 mPlaybackStatus = PlaybackStatus.STOPPED;
