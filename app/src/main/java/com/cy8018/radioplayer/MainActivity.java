@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         }
         textCurrentStationName.setText(title);
 
-        int iResource = getResources().getIdentifier("@drawable/loading_spinning", null, getPackageName());
+        int iResource = getResources().getIdentifier("@drawable/loading_snake", null, getPackageName());
         imagePlayBtn.setImageResource(iResource);
 
         imageCurrentFlag.setImageResource(getResources().getIdentifier(getFlagResourceByCountry(station.country), null, getPackageName()));
@@ -222,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         switch (playbackState) {
             case Player.STATE_BUFFERING:
                 mPlaybackStatus = PlaybackStatus.LOADING;
-                imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/loading_spinning", null, getPackageName()));
+                imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/loading_snake", null, getPackageName()));
                 break;
             case Player.STATE_ENDED:
                 mPlaybackStatus = PlaybackStatus.STOPPED;
