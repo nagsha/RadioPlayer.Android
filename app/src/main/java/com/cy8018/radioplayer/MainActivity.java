@@ -32,7 +32,6 @@ import com.google.android.exoplayer2.util.Util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
@@ -45,8 +44,11 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
 
     private static final String TAG = "MainActivity";
 
+    // Server address
+    public static final String Server = "52.155.97.142";
+
     // Station list JSON file url
-    public static final String StationListUrl = "http://13.78.120.63/radio/station_list.json";
+    public static final String StationListUrl = "http://" + Server + "/radio/radio_station_list.json";
 
     public final MsgHandler mHandler = new MsgHandler(this);
 
@@ -177,6 +179,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         player.addListener(this);
         // Produces DataSource instances through which media data is loaded.
         dataSourceFactory = new DefaultDataSourceFactory(this, Util.getUserAgent(this, "RadioPlayer"));
+
     }
 
     protected void play(String url)
@@ -222,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         switch (playbackState) {
             case Player.STATE_BUFFERING:
                 mPlaybackStatus = PlaybackStatus.LOADING;
-                imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/loading_snake", null, getPackageName()));
+                imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/loading_circle", null, getPackageName()));
                 break;
             case Player.STATE_ENDED:
                 mPlaybackStatus = PlaybackStatus.STOPPED;
@@ -294,6 +297,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         @Override
         public void run() {
             String jsonString = getJsonString(StationListUrl);
+            Log.d(TAG,  "Json String: " + jsonString);
 
             JSONObject object = JSON.parseObject(jsonString);
             Object objArray = object.get("stations");
