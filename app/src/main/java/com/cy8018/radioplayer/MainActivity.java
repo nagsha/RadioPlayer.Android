@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         // Load the station logo.
         Glide.with(this)
                 .asBitmap()
-                .load(station.logo)
+                .load("http://" + Server + "/radio/logo/" + station.logo)
                 .into(imageCurrentStationLogo);
 
         String title = station.name + ", " + station.city;
@@ -145,12 +145,22 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         imageCurrentStationLogo = findViewById(R.id.imageCurrentStationLogo);
         textCurrentStationName = findViewById(R.id.textCurrentStationName);
 
+
+        imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/play", null, getPackageName()));
+
+
         imagePlayBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                Log.d(TAG, "OnClickListener mPlaybackStatus: " + mPlaybackStatus);
+
                 switch (mPlaybackStatus) {
+                    case PlaybackStatus.IDLE:
                     case PlaybackStatus.PAUSED:
-                        play(mCurrentStation.url);
+                        if (null != mCurrentStation && !mCurrentStation.url.isEmpty()) {
+                            play(mCurrentStation.url);
+                        }
                         break;
                     case PlaybackStatus.PLAYING:
                         player.stop(false);
@@ -184,6 +194,9 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
 
     protected void play(String url)
     {
+        if (url == null || url.isEmpty())
+            return;
+
         Uri uri = Uri.parse(url);
         if (player.isPlaying()) {
             player.stop();
@@ -231,10 +244,6 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
                 mPlaybackStatus = PlaybackStatus.STOPPED;
                 imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/play", null, getPackageName()));
                 break;
-//            case Player.STATE_IDLE:
-//                mPlaybackStatus = PlaybackStatus.IDLE;
-//                imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/play", null, getPackageName()));
-//                break;
             case Player.STATE_READY:
                 mPlaybackStatus = playWhenReady ? PlaybackStatus.PLAYING : PlaybackStatus.PAUSED;
                 if (mPlaybackStatus ==PlaybackStatus.PLAYING) {
