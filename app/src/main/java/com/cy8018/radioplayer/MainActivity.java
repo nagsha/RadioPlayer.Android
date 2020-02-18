@@ -44,11 +44,11 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
 
     private static final String TAG = "MainActivity";
 
-    // Server address
-    public static final String Server = "52.155.97.142";
+    // ServerPrefix address
+    public static final String ServerPrefix = "https://gitee.com/cy8018/Resources/raw/master";
 
     // Station list JSON file url
-    public static final String StationListUrl = "http://" + Server + "/radio/radio_station_list.json";
+    public static final String StationListUrl = ServerPrefix + "/radio/radio_station_list.json";
 
     public final MsgHandler mHandler = new MsgHandler(this);
 
@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         // Load the station logo.
         Glide.with(this)
                 .asBitmap()
-                .load("http://" + Server + "/radio/logo/" + station.logo)
+                .load(ServerPrefix + "/radio/logo/" + station.logo)
                 .into(imageCurrentStationLogo);
 
         String title = station.name + ", " + station.city;
@@ -209,19 +209,19 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         int mediaType = Util.inferContentType(uri);
         switch (mediaType) {
             case C.TYPE_DASH:
-                Log.d(TAG, "MediaType: DASH,  URL:" + url);
+                Log.d(TAG, "MediaType: DASH,  URL: " + url);
                 mediaSource =  new DashMediaSource.Factory(dataSourceFactory).createMediaSource(uri);
                 break;
             case C.TYPE_SS:
-                Log.d(TAG, "MediaType: SS,  URL:" + url);
+                Log.d(TAG, "MediaType: SS,  URL: " + url);
                 mediaSource =  new SsMediaSource.Factory(dataSourceFactory).createMediaSource(uri);
                 break;
             case C.TYPE_HLS:
-                Log.d(TAG, "MediaType: HLS,  URL:" + url);
+                Log.d(TAG, "MediaType: HLS,  URL: " + url);
                 mediaSource =  new HlsMediaSource.Factory(dataSourceFactory).createMediaSource(uri);
                 break;
             default:
-                Log.d(TAG, "MediaType: OTHER,  URL:" + url);
+                Log.d(TAG, "MediaType: OTHER,  URL: " + url);
                 mediaSource =  new ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(uri);
                 break;
         }
@@ -306,7 +306,6 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         @Override
         public void run() {
             String jsonString = getJsonString(StationListUrl);
-            Log.d(TAG,  "Json String: " + jsonString);
 
             JSONObject object = JSON.parseObject(jsonString);
             Object objArray = object.get("stations");

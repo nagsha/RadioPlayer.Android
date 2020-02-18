@@ -40,13 +40,10 @@ public class StationListAdapter extends RecyclerView.Adapter<StationListAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
-        Log.d(TAG, "onBindViewHolder: called.");
-
-        String logoUrl = "http://" + ((MainActivity)mContext).Server + "/radio/logo/" + mStationList.get(position).logo;
         // Load the station logo.
         Glide.with(mContext)
                 .asBitmap()
-                .load(logoUrl)
+                .load(((MainActivity)mContext).ServerPrefix + "/radio/logo/" + mStationList.get(position).logo)
                 .into(holder.stationLogo);
 
         String flagResource = ((MainActivity)mContext).getFlagResourceByCountry(mStationList.get(position).country);
@@ -62,7 +59,7 @@ public class StationListAdapter extends RecyclerView.Adapter<StationListAdapter.
         // Set the station title
         holder.stationTitle.setText(title);
 
-        Log.d(TAG, "onBindViewHolder: station loaded:" + title);
+        Log.d(TAG, "onBindViewHolder: Station loaded: " + title);
         // Set the station description
         holder.description.setText(mStationList.get(position).description);
 
@@ -70,7 +67,7 @@ public class StationListAdapter extends RecyclerView.Adapter<StationListAdapter.
         holder.parentLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "onClick: clicked on:" + mStationList.get(position).name);
+                Log.d(TAG, "onClick: clicked on: " + mStationList.get(position).name);
 
                 // Below line is just like a safety check, because sometimes holder could be null,
                 // in that case, getAdapterPosition() will return RecyclerView.NO_POSITION
