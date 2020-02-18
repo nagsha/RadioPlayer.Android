@@ -45,10 +45,10 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
     private static final String TAG = "MainActivity";
 
     // ServerPrefix address
-    public static final String ServerPrefix = "https://gitee.com/cy8018/Resources/raw/master";
+    public static final String ServerPrefix = "https://gitee.com/cy8018/Resources/raw/master/radio/";
 
     // Station list JSON file url
-    public static final String StationListUrl = ServerPrefix + "/radio/radio_station_list.json";
+    public static final String StationListFileName = "radio_station_list.json";
 
     public final MsgHandler mHandler = new MsgHandler(this);
 
@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         // Load the station logo.
         Glide.with(this)
                 .asBitmap()
-                .load(ServerPrefix + "/radio/logo/" + station.logo)
+                .load(ServerPrefix + "logo/" + station.logo)
                 .into(imageCurrentStationLogo);
 
         String title = station.name + ", " + station.city;
@@ -305,7 +305,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
     Runnable loadListRunnable = new Runnable(){
         @Override
         public void run() {
-            String jsonString = getJsonString(StationListUrl);
+            String jsonString = getJsonString(ServerPrefix + StationListFileName);
 
             JSONObject object = JSON.parseObject(jsonString);
             Object objArray = object.get("stations");
