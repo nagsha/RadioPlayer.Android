@@ -43,7 +43,7 @@ public class StationListAdapter extends RecyclerView.Adapter<StationListAdapter.
         // Load the station logo.
         Glide.with(mContext)
                 .asBitmap()
-                .load(((MainActivity)mContext).ServerPrefix + "logo/" + mStationList.get(position).logo)
+                .load(MainActivity.ServerPrefix + "logo/" + mStationList.get(position).logo)
                 .into(holder.stationLogo);
 
         String flagResource = ((MainActivity)mContext).getFlagResourceByCountry(mStationList.get(position).country);
@@ -82,7 +82,7 @@ public class StationListAdapter extends RecyclerView.Adapter<StationListAdapter.
                 // Send MSG_PLAY message to main thread to play the radio
                 Message msg = new Message();
                 msg.obj = position;
-                msg.what = ((MainActivity)mContext).MSG_PLAY;
+                msg.what = MainActivity.MSG_PLAY;
                 ((MainActivity)mContext).mHandler.sendMessage(msg);
             }
         });

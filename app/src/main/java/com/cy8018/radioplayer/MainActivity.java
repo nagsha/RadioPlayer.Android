@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         }
 
         @Override
-        public void handleMessage(Message msg) {
+        public void handleMessage(@NotNull Message msg) {
             super.handleMessage(msg);
 
             Log.d(TAG, "Handler: msg.what = " + msg.what);
@@ -253,6 +253,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
                     imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/play", null, getPackageName()));
                 }
                 break;
+            case Player.STATE_IDLE:
             default:
                 mPlaybackStatus = PlaybackStatus.IDLE;
                 imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/play", null, getPackageName()));
