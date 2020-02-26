@@ -1,5 +1,5 @@
 # Online RadioPlayer for Android
-Released APK files are available on [GitHub][1] and [Gitee][2].
+Based on ExoPlayer. Released APK files are available on [GitHub][1] and [Gitee][2].
 
 ![avatar](https://raw.githubusercontent.com/cy8018/Resources/master/radio/snapshot/snapshot_android_radio_1.png)
 
