@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         }
         textCurrentStationName.setText(title);
 
-        int iResource = getResources().getIdentifier("@drawable/loading_snake", null, getPackageName());
+        int iResource = getResources().getIdentifier("@drawable/loading_circle", null, getPackageName());
         imagePlayBtn.setImageResource(iResource);
 
         imageCurrentFlag.setImageResource(getResources().getIdentifier(getFlagResourceByCountry(station.country), null, getPackageName()));
