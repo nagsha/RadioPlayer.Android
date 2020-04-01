@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
     public static final String ServerPrefix = "https://gitee.com/cy8018/Resources/raw/master/radio/";
 
     // Station list JSON file url
-    public static final String StationListFileName = "radio_station_list.json";
+    public static final String StationListFileName = "radio_station_list_ext.json";
 
     public final MsgHandler mHandler = new MsgHandler(this);
 
@@ -63,6 +63,8 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
 
     private Station mCurrentStation;
 
+    private int mCurrentSourceIndex;
+
     // Exo Player instance
     protected SimpleExoPlayer player;
 
@@ -70,6 +72,8 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
     protected DataSource.Factory dataSourceFactory;
 
     protected TextView textCurrentStationName;
+
+    protected TextView textSourceInfo;
 
     protected ImageView imageCurrentStationLogo;
 
@@ -109,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
                 int selectedPosition = (int) msg.obj;
                 mainActivity.mCurrentStation = mainActivity.mStationList.get(selectedPosition);
                 mainActivity.setCurrentPlayInfo(mainActivity.mCurrentStation);
-                mainActivity.play(mainActivity.mCurrentStation.url);
+                mainActivity.play(mainActivity.mCurrentStation, 0);
             }
         }
     }
@@ -144,10 +148,9 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         imageCurrentFlag = findViewById(R.id.imageCurrentFlag);
         imageCurrentStationLogo = findViewById(R.id.imageCurrentStationLogo);
         textCurrentStationName = findViewById(R.id.textCurrentStationName);
-
+        textSourceInfo = findViewById(R.id.textSourceInfo);
 
         imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/play", null, getPackageName()));
-
 
         imagePlayBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -159,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
                     case PlaybackStatus.IDLE:
                     case PlaybackStatus.PAUSED:
                         if (null != mCurrentStation && !mCurrentStation.url.isEmpty()) {
-                            play(mCurrentStation.url);
+                            play(mCurrentStation.url.get(mCurrentSourceIndex));
                         }
                         break;
                     case PlaybackStatus.PLAYING:
@@ -167,6 +170,13 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
                         break;
                     default:
                 }
+            }
+        });
+
+        textSourceInfo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switchSource();
             }
         });
 
@@ -190,6 +200,21 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         // Produces DataSource instances through which media data is loaded.
         dataSourceFactory = new DefaultDataSourceFactory(this, Util.getUserAgent(this, "RadioPlayer"));
 
+    }
+
+    private String getSourceInfo(Station station, int source) {
+
+        return source + 1 + "/" + station.url.size();
+    }
+
+    protected void play(Station station, int source) {
+
+        mCurrentStation = station;
+        mCurrentSourceIndex = source;
+
+        //textCurrentStationName.setText(station.name);
+        textSourceInfo.setText(getSourceInfo(station, source));
+        play(station.url.get(source));
     }
 
     protected void play(String url)
@@ -259,6 +284,19 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
                 imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/play", null, getPackageName()));
                 break;
         }
+    }
+
+    protected  void switchSource() {
+
+        if (null == mCurrentStation) {
+            mCurrentStation = mStationList.get(mCurrentSourceIndex);
+        }
+
+        int index = 0;
+        if (mCurrentSourceIndex + 1 < mCurrentStation.url.size()) {
+            index = mCurrentSourceIndex + 1;
+        }
+        play(mCurrentStation, index);
     }
 
     private void releasePlayer() {

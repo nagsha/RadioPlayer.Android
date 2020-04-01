@@ -1,5 +1,7 @@
 package com.cy8018.radioplayer;
 
+import java.util.List;
+
 public class Station {
     public String name;
     public String country;
@@ -8,5 +10,5 @@ public class Station {
     public String style;
     public String description;
     public String logo;
-    public String url;
+    public List<String> url;
 }
