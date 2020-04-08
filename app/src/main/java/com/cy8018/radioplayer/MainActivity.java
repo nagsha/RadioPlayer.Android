@@ -10,9 +10,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -214,6 +216,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
 
         //textCurrentStationName.setText(station.name);
         textSourceInfo.setText(getSourceInfo(station, source));
+
         play(station.url.get(source));
     }
 
@@ -221,6 +224,10 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
     {
         if (url == null || url.isEmpty())
             return;
+
+        Toast toast= Toast.makeText(getApplicationContext(), "Playing  "+ mCurrentStation.name + "  " + textSourceInfo.getText() + "\n" + url, Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.BOTTOM, 0, 180);
+        toast.show();
 
         Uri uri = Uri.parse(url);
         if (player.isPlaying()) {
