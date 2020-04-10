@@ -221,10 +221,12 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
     private  void hideBufferingInfo () {
         isBuffering = false;
         textBufferingInfo.setText("");
+        textBufferingInfo.setVisibility(View.INVISIBLE);
     }
 
     private void showBufferingInfo () {
         isBuffering = true;
+        textBufferingInfo.setVisibility(View.VISIBLE);
     }
 
     private long getNetSpeed() {
@@ -245,11 +247,11 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
     public String getNetSpeedText(long speed) {
         String text = "";
         if (speed >= 0 && speed < 1024) {
-            text = speed + " KB/s";
+            text = speed + "KB/s";
         } else if (speed >= 1024 && speed < (1024 * 1024)) {
-            text = speed / 1024 + " KB/s";
+            text = speed / 1024 + "KB/s";
         } else if (speed >= (1024 * 1024) && speed < (1024 * 1024 * 1024)) {
-            text = speed / (1024 * 1024) + " MB/s";
+            text = speed / (1024 * 1024) + "MB/s";
         }
         return text;
     }

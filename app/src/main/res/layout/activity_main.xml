@@ -80,7 +80,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:gravity="center"
-                android:textSize="8sp"
+                android:textSize="9sp"
                 />
 
         </FrameLayout>
