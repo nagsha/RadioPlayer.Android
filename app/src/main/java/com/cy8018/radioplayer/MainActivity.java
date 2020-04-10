@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.net.TrafficStats;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -60,6 +61,9 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
     // message to play the radio
     public static final int MSG_PLAY = 1;
 
+    // message to get buffering info
+    public static final int MSG_GET_BUFFERING_INFO = 2;
+
     // station list
     protected List<Station> mStationList;
 
@@ -76,12 +80,19 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
     protected TextView textCurrentStationName;
 
     protected TextView textSourceInfo;
+    protected TextView textBufferingInfo;
 
     protected ImageView imageCurrentStationLogo;
 
     protected GifImageView imagePlayBtn;
 
     protected ImageView imageCurrentFlag;
+
+    private long lastTotalRxBytes = 0;
+
+    private long lastTimeStamp = 0;
+
+    protected boolean isBuffering = false;
 
     protected int mPlaybackStatus;
 
@@ -117,6 +128,9 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
                 mainActivity.setCurrentPlayInfo(mainActivity.mCurrentStation);
                 mainActivity.play(mainActivity.mCurrentStation, 0);
             }
+            else if (msg.what == MSG_GET_BUFFERING_INFO) {
+                mainActivity.getBufferingInfo();
+            }
         }
     }
 
@@ -140,6 +154,15 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         imageCurrentFlag.setImageResource(getResources().getIdentifier(getFlagResourceByCountry(station.country), null, getPackageName()));
     }
 
+    private void getBufferingInfo() {
+        String netSpeed = getNetSpeedText(getNetSpeed());
+        //int percent = getBufferedPercentage();
+        //String bufferingInfo = " " + percent + "%\n" + netSpeed;
+        String bufferingInfo = netSpeed;
+        textBufferingInfo.setText(bufferingInfo);
+        Log.d(TAG, bufferingInfo);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -151,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         imageCurrentStationLogo = findViewById(R.id.imageCurrentStationLogo);
         textCurrentStationName = findViewById(R.id.textCurrentStationName);
         textSourceInfo = findViewById(R.id.textSourceInfo);
+        textBufferingInfo = findViewById(R.id.textBufferingInfo);
 
         imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/play", null, getPackageName()));
 
@@ -185,12 +209,57 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         initializePlayer();
 
         new Thread(loadListRunnable).start();
+        new Thread(networkCheckRunnable).start();
     }
 
     @Override
     protected void onDestroy() {
         releasePlayer();
         super.onDestroy();
+    }
+
+    private  void hideBufferingInfo () {
+        isBuffering = false;
+        textBufferingInfo.setText("");
+    }
+
+    private void showBufferingInfo () {
+        isBuffering = true;
+    }
+
+    private long getNetSpeed() {
+
+        long nowTotalRxBytes = TrafficStats.getUidRxBytes(getApplicationContext().getApplicationInfo().uid) == TrafficStats.UNSUPPORTED ? 0 : (TrafficStats.getTotalRxBytes() / 1024);
+        long nowTimeStamp = System.currentTimeMillis();
+        long calculationTime = (nowTimeStamp - lastTimeStamp);
+        if (calculationTime == 0) {
+            return calculationTime;
+        }
+
+        long speed = ((nowTotalRxBytes - lastTotalRxBytes) * 1000 / calculationTime);
+        lastTimeStamp = nowTimeStamp;
+        lastTotalRxBytes = nowTotalRxBytes;
+        return speed;
+    }
+
+    public String getNetSpeedText(long speed) {
+        String text = "";
+        if (speed >= 0 && speed < 1024) {
+            text = speed + " KB/s";
+        } else if (speed >= 1024 && speed < (1024 * 1024)) {
+            text = speed / 1024 + " KB/s";
+        } else if (speed >= (1024 * 1024) && speed < (1024 * 1024 * 1024)) {
+            text = speed / (1024 * 1024) + " MB/s";
+        }
+        return text;
+    }
+
+    public int getBufferedPercentage() {
+        if (null == player) {
+            return 0;
+        }
+
+        return player.getBufferedPercentage();
     }
 
     protected void initializePlayer (){
@@ -271,10 +340,12 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
             case Player.STATE_BUFFERING:
                 mPlaybackStatus = PlaybackStatus.LOADING;
                 imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/loading_circle", null, getPackageName()));
+                showBufferingInfo();
                 break;
             case Player.STATE_ENDED:
                 mPlaybackStatus = PlaybackStatus.STOPPED;
                 imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/play", null, getPackageName()));
+                hideBufferingInfo();
                 break;
             case Player.STATE_READY:
                 mPlaybackStatus = playWhenReady ? PlaybackStatus.PLAYING : PlaybackStatus.PAUSED;
@@ -284,11 +355,13 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
                 else {
                     imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/play", null, getPackageName()));
                 }
+                hideBufferingInfo();
                 break;
             case Player.STATE_IDLE:
             default:
                 mPlaybackStatus = PlaybackStatus.IDLE;
                 imagePlayBtn.setImageResource(getResources().getIdentifier("@drawable/play", null, getPackageName()));
+                hideBufferingInfo();
                 break;
         }
     }
@@ -347,6 +420,22 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         }
         return resource;
     }
+
+    Runnable networkCheckRunnable = new Runnable() {
+        @Override
+        public void run() {
+            while (true) {
+                if (isBuffering) {
+                    try {
+                        mHandler.sendEmptyMessage(MSG_GET_BUFFERING_INFO);
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    };
 
     Runnable loadListRunnable = new Runnable(){
         @Override
