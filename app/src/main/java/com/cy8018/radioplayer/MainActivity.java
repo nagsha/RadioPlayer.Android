@@ -247,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
     public String getNetSpeedText(long speed) {
         String text = "";
         if (speed >= 0 && speed < 1024) {
-            text = speed + "KB/s";
+            text = speed + "B/s";
         } else if (speed >= 1024 && speed < (1024 * 1024)) {
             text = speed / 1024 + "KB/s";
         } else if (speed >= (1024 * 1024) && speed < (1024 * 1024 * 1024)) {
