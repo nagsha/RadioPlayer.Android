@@ -272,7 +272,6 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         player.addListener(this);
         // Produces DataSource instances through which media data is loaded.
         dataSourceFactory = new DefaultDataSourceFactory(this, Util.getUserAgent(this, "RadioPlayer"));
-
     }
 
     private String getSourceInfo(Station station, int source) {
@@ -296,9 +295,9 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         if (url == null || url.isEmpty())
             return;
 
-        Toast toast= Toast.makeText(getApplicationContext(), "Playing  "+ mCurrentStation.name + "  " + textSourceInfo.getText() + "\n" + url, Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.BOTTOM, 0, 180);
-        toast.show();
+//        Toast toast= Toast.makeText(getApplicationContext(), "Playing  "+ mCurrentStation.name + "  " + textSourceInfo.getText() + "\n" + url, Toast.LENGTH_SHORT);
+//        toast.setGravity(Gravity.BOTTOM, 0, 180);
+//        toast.show();
 
         Uri uri = Uri.parse(url);
         if (player.isPlaying()) {
@@ -391,6 +390,13 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
 
     private void initStationListView() {
         Log.d(TAG, "initStationListView: ");
+
+        if (null == mStationList || mStationList.size() < 1) {
+            Toast toast= Toast.makeText(getApplicationContext(), "         Unable to load the station list.\nPlease check your network connection.", Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+        }
+
         RecyclerView stationListView = findViewById(R.id.stationList);
         StationListAdapter adapter= new StationListAdapter(this, mStationList);
         stationListView.setAdapter(adapter);
@@ -443,14 +449,14 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         @Override
         public void run() {
             String jsonString = getJsonString(ServerPrefix + StationListFileName);
+            if (null != jsonString) {
+                JSONObject object = JSON.parseObject(jsonString);
+                Object objArray = object.get("stations");
+                String str = objArray + "";
 
-            JSONObject object = JSON.parseObject(jsonString);
-            Object objArray = object.get("stations");
-            String str = objArray+"";
-
-            mStationList = JSON.parseArray(str, Station.class);
-            Log.d(TAG,  mStationList.size() +" stations loaded from server.");
-
+                mStationList = JSON.parseArray(str, Station.class);
+                Log.d(TAG, mStationList.size() + " stations loaded from server.");
+            }
             // Send Message to Main thread to load the station list
             mHandler.sendEmptyMessage(MSG_LOAD_LIST);
         }
@@ -467,6 +473,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
                 return jsonData;
             } catch (Exception e) {
                 e.printStackTrace();
+                Log.e(TAG, "Exception when loading station list: " + e.getMessage());
             }
             return null;
         }
