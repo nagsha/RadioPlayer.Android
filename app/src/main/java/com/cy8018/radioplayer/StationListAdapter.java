@@ -43,7 +43,7 @@ public class StationListAdapter extends RecyclerView.Adapter<StationListAdapter.
         // Load the station logo.
         Glide.with(mContext)
                 .asBitmap()
-                .load(MainActivity.ServerPrefix + "logo/" + mStationList.get(position).logo)
+                .load(MainActivity.CurrentServerPrefix + "logo/" + mStationList.get(position).logo)
                 .into(holder.stationLogo);
 
         String flagResource = ((MainActivity)mContext).getFlagResourceByCountry(mStationList.get(position).country);

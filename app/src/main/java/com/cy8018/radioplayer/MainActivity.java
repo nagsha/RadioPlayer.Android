@@ -49,6 +49,8 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
 
     // ServerPrefix address
     public static final String ServerPrefix = "https://gitee.com/cy8018/Resources/raw/master/radio/";
+    public static final String ServerPrefixAlternative = "https://raw.githubusercontent.com/cy8018/Resources/master/radio/";
+    public static String CurrentServerPrefix = "https://gitee.com/cy8018/Resources/raw/master/radio/";
 
     // Station list JSON file url
     public static final String StationListFileName = "radio_station_list_ext.json";
@@ -139,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         // Load the station logo.
         Glide.with(this)
                 .asBitmap()
-                .load(ServerPrefix + "logo/" + station.logo)
+                .load(CurrentServerPrefix + "logo/" + station.logo)
                 .into(imageCurrentStationLogo);
 
         String title = station.name + ", " + station.city;
@@ -208,7 +210,11 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
 
         initializePlayer();
 
-        new Thread(loadListRunnable).start();
+        if (null == mStationList || mStationList.isEmpty()) {
+            new LoadListThread(ServerPrefix).start();
+            new LoadListThread(ServerPrefixAlternative).start();
+        }
+
         new Thread(networkCheckRunnable).start();
     }
 
@@ -445,20 +451,34 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
         }
     };
 
-    Runnable loadListRunnable = new Runnable(){
+    public class LoadListThread extends Thread {
+
+        private String serverPrefix;
+
+        LoadListThread(String serverPrefix) {
+            this.serverPrefix = serverPrefix;
+        }
+
         @Override
         public void run() {
-            String jsonString = getJsonString(ServerPrefix + StationListFileName);
-            if (null != jsonString) {
+
+            if (serverPrefix == null || serverPrefix.length() < 1) {
+                return;
+            }
+
+            String jsonString = getJsonString(serverPrefix + StationListFileName);
+            if (null != jsonString && (mStationList == null || mStationList.size() == 0))
+            {
+                CurrentServerPrefix = serverPrefix;
                 JSONObject object = JSON.parseObject(jsonString);
                 Object objArray = object.get("stations");
-                String str = objArray + "";
-
+                String str = objArray+"";
                 mStationList = JSON.parseArray(str, Station.class);
-                Log.d(TAG, mStationList.size() + " stations loaded from server.");
+                Log.d(TAG,  mStationList.size() +" stations loaded from server.");
+
+                // Send Message to Main thread to load the station list
+                mHandler.sendEmptyMessage(MSG_LOAD_LIST);
             }
-            // Send Message to Main thread to load the station list
-            mHandler.sendEmptyMessage(MSG_LOAD_LIST);
         }
 
         @Nullable
@@ -467,6 +487,7 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
                 OkHttpClient client = new OkHttpClient();
                 Request request = new Request.Builder().url(url).build();
                 Response responses = client.newCall(request).execute();
+                assert responses.body() != null;
                 String jsonData = responses.body().string();
                 Log.d(TAG, "getJsonString: [" + jsonData + "]");
 
@@ -477,5 +498,5 @@ public class MainActivity extends AppCompatActivity implements Player.EventListe
             }
             return null;
         }
-    };
+    }
 }
