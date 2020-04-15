@@ -1,5 +1,5 @@
-# Online RadioPlayer for Android
-Based on ExoPlayer. APK files are available on [Releases Page][1].
+# <div align=center>Online RadioPlayer for Android</div>
+### <div align=center>Based on ExoPlayer. APK files are available on [Releases Page][1].</div>
 
 <div align=center>
 <a href="https://play.google.com/store/apps/details?id=com.cy8018.radioplayer" target="_blank">
